@@ -52,8 +52,14 @@ config :live_test, LiveTestWeb.Endpoint,
       ~r{priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$},
       ~r{priv/gettext/.*(po)$},
       ~r{lib/live_test_web/views/.*(ex)$},
-      ~r{lib/live_test_web/templates/.*(eex)$}
+      ~r{lib/live_test_web/templates/.*(eex)$},
+      ~r{lib/live_test_web/live/.*(ex)$}
     ]
+  ]
+
+config :live_test, LiveTestWeb.Endpoint,
+  live_view: [
+    signing_salt: "6KPWeVOorN3OY54bT+P2yI3S5pccomVd"
   ]
 
 # Do not include metadata nor timestamps in development logs

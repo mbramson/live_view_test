@@ -6,6 +6,11 @@ config :live_test, LiveTestWeb.Endpoint,
   http: [port: 4002],
   server: false
 
+config :live_test, LiveTestWeb.Endpoint,
+  live_view: [
+    signing_salt: "6KPWeVOorN3OY54bT+P2yI3S5pccomVd"
+  ]
+
 # Print only warnings and errors during test
 config :logger, level: :warn
 

@@ -39,6 +39,8 @@ defmodule LiveTestWeb do
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
 
+      import Phoenix.LiveView, only: [live_render: 2, live_render: 3]
+
       import LiveTestWeb.ErrorHelpers
       import LiveTestWeb.Gettext
       alias LiveTestWeb.Router.Helpers, as: Routes
@@ -50,6 +52,7 @@ defmodule LiveTestWeb do
       use Phoenix.Router
       import Plug.Conn
       import Phoenix.Controller
+      import Phoenix.LiveView.Router
     end
   end
 
