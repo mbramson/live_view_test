@@ -1,0 +1,23 @@
+<h1>Show Thing</h1>
+
+<ul>
+
+  <li>
+    <strong>Name:</strong>
+    <%= @thing.name %>
+  </li>
+
+  <li>
+    <strong>Number:</strong>
+    <%= @thing.number %>
+  </li>
+
+  <li>
+    <strong>Other name:</strong>
+    <%= @thing.other_name %>
+  </li>
+
+</ul>
+
+<span><%= link "Edit", to: Routes.thing_path(@conn, :edit, @thing) %></span>
+<span><%= link "Back", to: Routes.thing_path(@conn, :index) %></span>

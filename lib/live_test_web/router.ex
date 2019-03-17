@@ -19,6 +19,8 @@ defmodule LiveTestWeb.Router do
     pipe_through :browser
 
     live "/big_small",BigSmallLive
+    live "/things", ThingLive.Index
+    resources "/plain/things", ThingController
     get "/", PageController, :index
   end
 
