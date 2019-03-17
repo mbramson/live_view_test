@@ -5,9 +5,10 @@ defmodule LiveTestWeb.Router do
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_flash
+    plug Phoenix.LiveView.Flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-    plug Phoenix.LiveView.Flash
+    plug :put_layout, {LiveTestWeb.LayoutView, :app}
   end
 
   pipeline :api do
@@ -17,6 +18,7 @@ defmodule LiveTestWeb.Router do
   scope "/", LiveTestWeb do
     pipe_through :browser
 
+    live "/big_small",BigSmallLive
     get "/", PageController, :index
   end
 
