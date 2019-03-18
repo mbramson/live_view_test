@@ -2,6 +2,10 @@ defmodule LiveTestWeb.ThingLive do
   defmodule Index do
     use Phoenix.LiveView
     alias LiveTest.Validation
+    import Phoenix.HTML
+    import Phoenix.HTML.Form
+    import Phoenix.HTML.Tag
+    import LiveTestWeb.ErrorHelpers
 
     def render(assigns) do
       ~L"""
@@ -25,9 +29,22 @@ defmodule LiveTestWeb.ThingLive do
             </td>
           </tr>
       <% end %>
+          <tr>
+            <%= form_for @changeset, "#", [phx_change: :validate, phx_submit: :save_new_thing], fn f -> %>
+              <td>
+                <%= text_input f, :name %>
+                <%= error_tag f, :name %>
+              </td>
+              <td>
+                <%= text_input f, :number %>
+                <%= error_tag f, :number %>
+              </td>
+              <td><%= submit "Save", phx_disable_with: "Saving..." %></td>
+            <% end %>
+          </tr>
         </tbody>
       </table>
-      <button phx-click="new_thing">New Thing</button>
+      <button phx-click="new_empty_thing">New Thing</button>
       """
     end
 
@@ -36,13 +53,14 @@ defmodule LiveTestWeb.ThingLive do
         Phoenix.PubSub.subscribe(LiveTest.PubSub, "topics.things")
       end
 
+      changeset = Validation.change_thing()
       all_things = fetch_all_things()
-      {:ok, assign(socket, things: all_things)}
+      {:ok, assign(socket, things: all_things, changeset: changeset)}
     end
 
     # Events from front end
 
-    def handle_event("new_thing", _payload, socket) do
+    def handle_event("new_empty_thing", _payload, socket) do
       new_thing = create_thing()
       notify_subscribers(:create)
       existing_things = socket.assigns[:things]
@@ -56,6 +74,19 @@ defmodule LiveTestWeb.ThingLive do
       existing_things = socket.assigns[:things]
       all_things = Enum.reject(existing_things, &(&1.id == thing_id))
       {:noreply, assign(socket, things: all_things)}
+    end
+
+    def handle_event("save_new_thing", %{"thing" => user_params}, socket) do
+      case Validation.create_thing(user_params) do
+        {:ok, thing} ->
+          notify_subscribers(:save)
+          all_things = fetch_all_things()
+          changeset = Validation.change_thing()
+          {:noreply, assign(socket, things: all_things, changeset: changeset)}
+
+        {:error, %Ecto.Changeset{} = changeset} ->
+          {:noreply, assign(socket, changeset: changeset)}
+      end
     end
 
     def handle_event(unhandled_event, payload, socket) do

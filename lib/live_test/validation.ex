@@ -100,7 +100,7 @@ defmodule LiveTest.Validation do
       %Ecto.Changeset{source: %Thing{}}
 
   """
-  def change_thing(%Thing{} = thing) do
+  def change_thing(thing \\ %Thing{}) do
     Thing.changeset(thing, %{})
   end
 end
