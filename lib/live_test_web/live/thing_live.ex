@@ -2,7 +2,6 @@ defmodule LiveTestWeb.ThingLive do
   defmodule Index do
     use Phoenix.LiveView
     alias LiveTest.Validation
-    alias LiveTest.Validation.Thing
 
     def render(assigns) do
       ~L"""
@@ -33,31 +32,29 @@ defmodule LiveTestWeb.ThingLive do
     end
 
     def mount(_session, socket) do
-      things = Validation.list_things()
-      {:ok, assign(socket, things: things)}
+      if connected?(socket) do
+        Phoenix.PubSub.subscribe(LiveTest.PubSub, "topics.things")
+      end
+
+      all_things = fetch_all_things()
+      {:ok, assign(socket, things: all_things)}
     end
 
-    def handle_event("new_thing", payload, socket) do
-      existing_things = socket.assigns[:things]
-      all_things = case Validation.create_thing(%{}) do
-        {:ok, new_thing} ->
-          existing_things ++ [new_thing]
+    # Events from front end
 
-        _ -> existing_things
-      end
+    def handle_event("new_thing", _payload, socket) do
+      new_thing = create_thing()
+      notify_subscribers(:create)
+      existing_things = socket.assigns[:things]
+      all_things = existing_things ++ [new_thing]
       {:noreply, assign(socket, things: all_things)}
     end
     
     def handle_event("delete_thing", thing_id, socket) do
+      delete_thing(thing_id)
+      notify_subscribers(:delete)
       existing_things = socket.assigns[:things]
-      all_things = case Validation.get_thing(thing_id) do
-        %Thing{} = thing ->
-          Validation.delete_thing(thing)
-          Enum.reject(existing_things, &(&1.id == thing.id))
-        _ -> 
-          IO.inspect "thing does not exist when trying to delete"
-          existing_things
-      end
+      all_things = Enum.reject(existing_things, &(&1.id == thing_id))
       {:noreply, assign(socket, things: all_things)}
     end
 
@@ -65,6 +62,33 @@ defmodule LiveTestWeb.ThingLive do
       IO.inspect unhandled_event, label: "unhandled_event"
       IO.inspect payload, label: "payload"
       {:noreply, socket}
+    end
+
+    # PubSub Stuff for cross-user communication
+
+    def handle_info({"topics.things", {:thing, _}}, socket) do
+      all_things = fetch_all_things()
+      {:noreply, assign(socket, things: all_things)}
+    end
+
+    defp notify_subscribers(event) do
+      Phoenix.PubSub.broadcast(LiveTest.PubSub, "topics.things", {"topics.things", {:thing, event}})
+    end
+
+    # Private things
+
+    defp fetch_all_things() do
+      Validation.list_things()
+    end
+
+    defp create_thing() do
+      {:ok, thing} = Validation.create_thing()
+      thing
+    end
+
+    defp delete_thing(thing_id) do
+      thing = Validation.get_thing(thing_id)
+      Validation.delete_thing(thing)
     end
   end
 end
