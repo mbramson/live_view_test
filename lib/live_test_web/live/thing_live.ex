@@ -36,7 +36,7 @@ defmodule LiveTestWeb.ThingLive do
           </tr>
         </tbody>
       </table>
-      <button phx-click="new_empty_thing">New Thing</button>
+      <h3>New Thing</h3>
       <%= form_for @changeset, "#", [phx_change: :validate, phx_submit: :save_new_thing], fn f -> %>
 
         <%= label f, :name %>
@@ -64,14 +64,6 @@ defmodule LiveTestWeb.ThingLive do
 
     # Events from front end
 
-    def handle_event("new_empty_thing", _payload, socket) do
-      new_thing = create_thing()
-      notify_subscribers(:create)
-      existing_things = socket.assigns[:things]
-      all_things = existing_things ++ [new_thing]
-      {:noreply, assign(socket, things: all_things)}
-    end
-    
     def handle_event("delete_thing", thing_id, socket) do
       delete_thing(thing_id)
       notify_subscribers(:delete)
